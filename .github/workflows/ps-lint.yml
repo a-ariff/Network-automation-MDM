@@ -1,0 +1,29 @@
+name: PowerShell Lint
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Install PSScriptAnalyzer
+        shell: powershell
+        run: |
+          Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser
+          
+      - name: Run PSScriptAnalyzer
+        shell: powershell
+        run: |
+          $results = Invoke-ScriptAnalyzer -Path .\scripts\ -Recurse -ReportSummary
+          if ($results) {
+            $results | Format-Table
+            throw "PSScriptAnalyzer found issues"
+          }
+          Write-Host "No issues found by PSScriptAnalyzer"
